@@ -8,7 +8,6 @@ include_directories(
 set(TESTS
   test_Integrator
   )
-message(STATUS "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 
 foreach(t ${TESTS})
   add_executable(${t} ${t}.cpp)
