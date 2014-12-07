@@ -8,12 +8,18 @@ struct OqsJumpTrajectory_ {
   struct OqsSchrodingerEqn *schrodingerEqn;
 };
 
-OQS_STATUS oqsJumpTrajectoryCreate(OqsJumpTrajectory *trajectory)
+OQS_STATUS oqsJumpTrajectoryCreate(size_t dim, OqsJumpTrajectory *trajectory)
 {
 	*trajectory = (OqsJumpTrajectory)malloc(sizeof(**trajectory));
 	if (*trajectory == 0) return OQS_OUT_OF_MEMORY;
-	(*trajectory)->state = 0;
-	(*trajectory)->dim = 0;
+	(*trajectory)->state =
+	    (struct OqsAmplitude *)malloc(dim * sizeof((*trajectory)->state));
+	if ((*trajectory)->state == 0) {
+		free(*trajectory);
+		*trajectory = 0;
+		return OQS_OUT_OF_MEMORY;
+	}
+	(*trajectory)->dim = dim;
 	return OQS_SUCCESS;
 }
 

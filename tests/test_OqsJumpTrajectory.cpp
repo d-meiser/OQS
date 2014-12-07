@@ -5,7 +5,7 @@ class JumpTrajectory : public ::testing::Test {
   public:
     OqsJumpTrajectory trajectory;
     void SetUp() {
-      OQS_STATUS stat = oqsJumpTrajectoryCreate(&trajectory);
+      OQS_STATUS stat = oqsJumpTrajectoryCreate(2, &trajectory);
       ASSERT_EQ(OQS_SUCCESS, stat);
     }
     void TearDown() {

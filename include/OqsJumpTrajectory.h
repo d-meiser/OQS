@@ -48,7 +48,7 @@ struct OqsObservable {
 struct OqsJumpTrajectory_;
 typedef struct OqsJumpTrajectory_ *OqsJumpTrajectory;
 
-OQS_STATUS oqsJumpTrajectoryCreate(OqsJumpTrajectory *trajectory);
+OQS_STATUS oqsJumpTrajectoryCreate(size_t dim, OqsJumpTrajectory *trajectory);
 OQS_STATUS oqsJumpTrajectoryDestroy(OqsJumpTrajectory *trajectory);
 OQS_STATUS
 oqsJumpTrajectorySetSchrodingerEqn(OqsJumpTrajectory trajectory,
