@@ -2,13 +2,13 @@
 #include <stdlib.h>
 #include <OqsAmplitude.h>
 
-struct OqsJumpTrajectory_
-{
+struct OqsJumpTrajectory_ {
 	struct OqsAmplitude *state;
 	size_t dim;
 };
 
-OQS_STATUS oqsJumpTrajectoryCreate(OqsJumpTrajectory *trajectory) {
+OQS_STATUS oqsJumpTrajectoryCreate(OqsJumpTrajectory *trajectory)
+{
 	*trajectory = (OqsJumpTrajectory)malloc(sizeof(**trajectory));
 	if (*trajectory == 0) return OQS_OUT_OF_MEMORY;
 	(*trajectory)->state = 0;
@@ -16,7 +16,8 @@ OQS_STATUS oqsJumpTrajectoryCreate(OqsJumpTrajectory *trajectory) {
 	return OQS_SUCCESS;
 }
 
-OQS_STATUS oqsJumpTrajectoryDestroy(OqsJumpTrajectory *trajectory) {
+OQS_STATUS oqsJumpTrajectoryDestroy(OqsJumpTrajectory *trajectory)
+{
 	if (*trajectory) {
 		free((*trajectory)->state);
 	}
@@ -24,5 +25,4 @@ OQS_STATUS oqsJumpTrajectoryDestroy(OqsJumpTrajectory *trajectory) {
 	*trajectory = 0;
 	return OQS_SUCCESS;
 }
-
 

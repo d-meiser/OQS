@@ -19,11 +19,31 @@ with oqs.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef OQS_JUMP_TRAJECTORY_H
 #define OQS_JUMP_TRAJECTORY_H
 
+#include <stdlib.h>
 #include <OqsErrors.h>
+#include <OqsAmplitude.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+struct SchrodingerEqn {
+	void (*RHS)(const struct OqsAmplitude *x, struct OqsAmplitude *y,
+		    double t, void *ctx);
+	void *ctx;
+};
+
+struct DecayOperator {
+	void (*apply)(const struct OqsAmplitude *x, struct OqsAmplitude *y,
+		      void *ctx);
+	void *ctx;
+};
+
+struct Observable {
+	void (*apply)(const struct OqsAmplitude *x, struct OqsAmplitude *y,
+		      void *ctx);
+	void *ctx;
+};
 
 struct OqsJumpTrajectory_;
 typedef struct OqsJumpTrajectory_ *OqsJumpTrajectory;
