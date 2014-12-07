@@ -58,6 +58,7 @@ endif()
 
 include_directories(${PROJECT_BINARY_DIR})
 
+add_subdirectory(include)
 add_subdirectory(src)
 if(BUILD_TESTS)
   add_subdirectory(gtest-1.7.0)
