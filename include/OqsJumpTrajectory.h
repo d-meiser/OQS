@@ -27,19 +27,19 @@ with oqs.  If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
-struct SchrodingerEqn {
+struct OqsSchrodingerEqn {
 	void (*RHS)(const struct OqsAmplitude *x, struct OqsAmplitude *y,
 		    double t, void *ctx);
 	void *ctx;
 };
 
-struct DecayOperator {
+struct OqsDecayOperator {
 	void (*apply)(const struct OqsAmplitude *x, struct OqsAmplitude *y,
 		      void *ctx);
 	void *ctx;
 };
 
-struct Observable {
+struct OqsObservable {
 	void (*apply)(const struct OqsAmplitude *x, struct OqsAmplitude *y,
 		      void *ctx);
 	void *ctx;
@@ -50,6 +50,9 @@ typedef struct OqsJumpTrajectory_ *OqsJumpTrajectory;
 
 OQS_STATUS oqsJumpTrajectoryCreate(OqsJumpTrajectory *trajectory);
 OQS_STATUS oqsJumpTrajectoryDestroy(OqsJumpTrajectory *trajectory);
+OQS_STATUS
+oqsJumpTrajectorySetSchrodingerEqn(OqsJumpTrajectory trajectory,
+				   struct OqsSchrodingerEqn *eqn);
 
 #ifdef __cplusplus
 }

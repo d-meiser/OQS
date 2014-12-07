@@ -5,6 +5,7 @@
 struct OqsJumpTrajectory_ {
 	struct OqsAmplitude *state;
 	size_t dim;
+  struct OqsSchrodingerEqn *schrodingerEqn;
 };
 
 OQS_STATUS oqsJumpTrajectoryCreate(OqsJumpTrajectory *trajectory)
@@ -26,3 +27,10 @@ OQS_STATUS oqsJumpTrajectoryDestroy(OqsJumpTrajectory *trajectory)
 	return OQS_SUCCESS;
 }
 
+OQS_STATUS
+oqsJumpTrajectorySetSchrodingerEqn(OqsJumpTrajectory trajectory,
+				   struct OqsSchrodingerEqn *eqn)
+{
+  trajectory->schrodingerEqn = eqn;
+  return OQS_SUCCESS;
+}
