@@ -1,4 +1,5 @@
 set(OQS_HEADERS
+    Oqs.h
     OqsAmplitude.h
     )
 
