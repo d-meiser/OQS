@@ -5,6 +5,7 @@ include_directories(
 
 set(OQS_SRCS
     Integrator.c
+    OqsJumpTrajectory.c
    )
 
 add_library(OQS ${OQS_SRCS})

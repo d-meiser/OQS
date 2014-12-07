@@ -7,6 +7,7 @@ include_directories(
 
 set(TESTS
   test_Integrator
+  test_OqsJumpTrajectory
   )
 
 foreach(t ${TESTS})
