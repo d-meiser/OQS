@@ -53,6 +53,9 @@ OQS_STATUS oqsJumpTrajectoryDestroy(OqsJumpTrajectory *trajectory);
 OQS_STATUS
 oqsJumpTrajectorySetSchrodingerEqn(OqsJumpTrajectory trajectory,
 				   struct OqsSchrodingerEqn *eqn);
+OQS_STATUS oqsJumpTrajectorySetState(OqsJumpTrajectory trajectory,
+				     const struct OqsAmplitude *state);
+struct OqsAmplitude *oqsJumpTrajectoryGetState(OqsJumpTrajectory trajectory);
 
 #ifdef __cplusplus
 }

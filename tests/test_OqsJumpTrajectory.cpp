@@ -25,3 +25,16 @@ TEST_F(JumpTrajectory, SetSchrodingerEqn) {
   ASSERT_EQ(OQS_SUCCESS, stat);
 }
 
+TEST_F(JumpTrajectory, SetState) {
+  struct OqsAmplitude state[2];
+  state[0].re = 2.0;
+  state[0].im = 0.2;
+  state[1].re = 1.7;
+  state[1].im = 2.4;
+  OQS_STATUS stat = oqsJumpTrajectorySetState(trajectory, state);
+  ASSERT_EQ(OQS_SUCCESS, stat);
+  struct OqsAmplitude* s = oqsJumpTrajectoryGetState(trajectory);
+  EXPECT_FLOAT_EQ(state[0].re, s[0].re);
+  EXPECT_FLOAT_EQ(state[1].im, s[1].im);
+}
+
