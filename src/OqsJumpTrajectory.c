@@ -66,3 +66,8 @@ double oqsJumpTrajectoryGetTime(OqsJumpTrajectory trajectory)
 {
 	return integratorGetTime(&trajectory->integrator);
 }
+
+int oqsJumpTrajectoryAdvance(OqsJumpTrajectory trajectory, double dt)
+{
+	return 0;
+}

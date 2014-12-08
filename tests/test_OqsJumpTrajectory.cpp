@@ -42,3 +42,10 @@ TEST_F(JumpTrajectory, GetTime) {
   double t = oqsJumpTrajectoryGetTime(trajectory);
   EXPECT_FLOAT_EQ(0, t);
 }
+
+TEST_F(JumpTrajectory, Advance) {
+  double tstart = oqsJumpTrajectoryGetTime(trajectory);
+  int decayOccurred = oqsJumpTrajectoryAdvance(trajectory, 1.0e-4);
+  double tend = oqsJumpTrajectoryGetTime(trajectory);
+  EXPECT_GT(tend, tstart);
+}

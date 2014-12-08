@@ -51,6 +51,7 @@ OQS_STATUS oqsJumpTrajectorySetState(OqsJumpTrajectory trajectory,
 				     const struct OqsAmplitude *state);
 struct OqsAmplitude *oqsJumpTrajectoryGetState(OqsJumpTrajectory trajectory);
 double oqsJumpTrajectoryGetTime(OqsJumpTrajectory trajectory);
+int oqsJumpTrajectoryAdvance(OqsJumpTrajectory trajectory, double dt);
 
 #ifdef __cplusplus
 }
