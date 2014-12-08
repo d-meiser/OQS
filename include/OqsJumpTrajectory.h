@@ -39,12 +39,6 @@ struct OqsDecayOperator {
 	void *ctx;
 };
 
-struct OqsObservable {
-	void (*apply)(const struct OqsAmplitude *x, struct OqsAmplitude *y,
-		      void *ctx);
-	void *ctx;
-};
-
 struct OqsJumpTrajectory_;
 typedef struct OqsJumpTrajectory_ *OqsJumpTrajectory;
 
@@ -56,6 +50,7 @@ oqsJumpTrajectorySetSchrodingerEqn(OqsJumpTrajectory trajectory,
 OQS_STATUS oqsJumpTrajectorySetState(OqsJumpTrajectory trajectory,
 				     const struct OqsAmplitude *state);
 struct OqsAmplitude *oqsJumpTrajectoryGetState(OqsJumpTrajectory trajectory);
+double oqsJumpTrajectoryGetTime(OqsJumpTrajectory trajectory);
 
 #ifdef __cplusplus
 }

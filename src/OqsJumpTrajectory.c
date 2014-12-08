@@ -2,11 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <OqsAmplitude.h>
+#include <Integrator.h>
 
 struct OqsJumpTrajectory_ {
 	struct OqsAmplitude *state;
 	size_t dim;
-  struct OqsSchrodingerEqn *schrodingerEqn;
+	struct OqsSchrodingerEqn *schrodingerEqn;
+	double z;
+	struct Integrator integrator;
 };
 
 OQS_STATUS oqsJumpTrajectoryCreate(size_t dim, OqsJumpTrajectory *trajectory)
@@ -21,6 +24,9 @@ OQS_STATUS oqsJumpTrajectoryCreate(size_t dim, OqsJumpTrajectory *trajectory)
 		return OQS_OUT_OF_MEMORY;
 	}
 	(*trajectory)->dim = dim;
+	(*trajectory)->schrodingerEqn = 0;
+	(*trajectory)->z = (double)rand() / RAND_MAX;
+	integratorCreate(&(*trajectory)->integrator, dim);
 	return OQS_SUCCESS;
 }
 
@@ -29,6 +35,7 @@ OQS_STATUS oqsJumpTrajectoryDestroy(OqsJumpTrajectory *trajectory)
 	if (*trajectory) {
 		free((*trajectory)->state);
 	}
+	integratorDestroy(&(*trajectory)->integrator);
 	free(*trajectory);
 	*trajectory = 0;
 	return OQS_SUCCESS;
@@ -53,4 +60,9 @@ oqsJumpTrajectorySetState(OqsJumpTrajectory trajectory,
 struct OqsAmplitude *oqsJumpTrajectoryGetState(OqsJumpTrajectory trajectory)
 {
 	return trajectory->state;
+}
+
+double oqsJumpTrajectoryGetTime(OqsJumpTrajectory trajectory)
+{
+	return integratorGetTime(&trajectory->integrator);
 }

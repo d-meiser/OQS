@@ -38,3 +38,7 @@ TEST_F(JumpTrajectory, SetState) {
   EXPECT_FLOAT_EQ(state[1].im, s[1].im);
 }
 
+TEST_F(JumpTrajectory, GetTime) {
+  double t = oqsJumpTrajectoryGetTime(trajectory);
+  EXPECT_FLOAT_EQ(0, t);
+}
