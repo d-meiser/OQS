@@ -67,7 +67,10 @@ double oqsJumpTrajectoryGetTime(OqsJumpTrajectory trajectory)
 	return integratorGetTime(&trajectory->integrator);
 }
 
-int oqsJumpTrajectoryAdvance(OqsJumpTrajectory trajectory, double dt)
+int oqsJumpTrajectoryAdvance(OqsJumpTrajectory trajectory, double t)
 {
+	integratorAdvanceTo(&trajectory->integrator, t, trajectory->state,
+			    trajectory->schrodingerEqn->RHS,
+			    trajectory->schrodingerEqn->ctx);
 	return 0;
 }

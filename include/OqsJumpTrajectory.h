@@ -28,8 +28,8 @@ extern "C" {
 #endif
 
 struct OqsSchrodingerEqn {
-	void (*RHS)(const struct OqsAmplitude *x, struct OqsAmplitude *y,
-		    double t, void *ctx);
+	void (*RHS)(double t, const struct OqsAmplitude *x,
+		    struct OqsAmplitude *y, void *ctx);
 	void *ctx;
 };
 
@@ -51,7 +51,7 @@ OQS_STATUS oqsJumpTrajectorySetState(OqsJumpTrajectory trajectory,
 				     const struct OqsAmplitude *state);
 struct OqsAmplitude *oqsJumpTrajectoryGetState(OqsJumpTrajectory trajectory);
 double oqsJumpTrajectoryGetTime(OqsJumpTrajectory trajectory);
-int oqsJumpTrajectoryAdvance(OqsJumpTrajectory trajectory, double dt);
+int oqsJumpTrajectoryAdvance(OqsJumpTrajectory trajectory, double t);
 
 #ifdef __cplusplus
 }
