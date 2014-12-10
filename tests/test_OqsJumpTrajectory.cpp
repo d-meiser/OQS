@@ -43,7 +43,22 @@ TEST_F(JumpTrajectory, GetTime) {
   EXPECT_FLOAT_EQ(0, t);
 }
 
+void RabiOscillationsRHS(double t, const struct OqsAmplitude* x,
+                         struct OqsAmplitude* y, void* ctx) {
+  double omega = *(double*)ctx;
+  y[0].re = omega * x[1].im;
+  y[0].im = -omega * x[1].re;
+  y[1].re = omega * x[0].im;
+  y[1].im = -omega * x[0].re;
+}
+
 TEST_F(JumpTrajectory, Advance) {
+  struct OqsSchrodingerEqn eqn;
+  eqn.RHS = &RabiOscillationsRHS;
+  double omega = 1.0;
+  eqn.ctx = (void*)&omega;
+  oqsJumpTrajectorySetSchrodingerEqn(trajectory, &eqn);
+
   double tstart = oqsJumpTrajectoryGetTime(trajectory);
   int decayOccurred = oqsJumpTrajectoryAdvance(trajectory, 1.0e-4);
   double tend = oqsJumpTrajectoryGetTime(trajectory);
