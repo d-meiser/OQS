@@ -1,6 +1,18 @@
 #include <gtest/gtest.h>
 #include <OqsJumpTrajectory.h>
 
+static double normSquared(const struct OqsAmplitude* a) {
+  return a->re * a->re + a->im * a->im;
+}
+
+static double vecNormSquared(const struct OqsAmplitude* v, int n) {
+  double result = 0;
+  for (int i = 0; i < n; ++i) {
+    result += normSquared(v + i);
+  }
+  return result;
+}
+
 class JumpTrajectory : public ::testing::Test {
   public:
     OqsJumpTrajectory trajectory;
@@ -55,6 +67,7 @@ void RabiOscillationsRHS(double t, const struct OqsAmplitude* x,
 class RabiOscillations : public JumpTrajectory {
  public:
   struct OqsSchrodingerEqn eqn;
+  std::vector<OqsAmplitude> initialState;
   double omega;
   void SetUp() {
     JumpTrajectory::SetUp();
@@ -62,16 +75,37 @@ class RabiOscillations : public JumpTrajectory {
     eqn.RHS = &RabiOscillationsRHS;
     eqn.ctx = (void*)&omega;
     oqsJumpTrajectorySetSchrodingerEqn(trajectory, &eqn);
+    initialState.resize(2);
+    initialState[0].re = 1;
+    initialState[0].im = 0;
+    initialState[1].re = 0;
+    initialState[1].im = 0;
+    oqsJumpTrajectorySetState(trajectory, &initialState[0]);
   }
   void TearDown() { JumpTrajectory::TearDown(); }
 };
 
 TEST_F(RabiOscillations, Advance) {
   double tstart = oqsJumpTrajectoryGetTime(trajectory);
-  int decayOccurred = oqsJumpTrajectoryAdvance(trajectory, 1.0e-4);
+  oqsJumpTrajectoryAdvance(trajectory, 1.0e-4);
   double tend = oqsJumpTrajectoryGetTime(trajectory);
   EXPECT_GT(tend, tstart);
 }
 
-TEST_F(RabiOscillations, PopulationOscillations) {
+TEST_F(RabiOscillations, NoDecay) {
+  int decayOccurred = oqsJumpTrajectoryAdvance(trajectory, 1.0e-4);
+  EXPECT_EQ(0, decayOccurred);
+}
+
+TEST_F(RabiOscillations, PhaseProperties) {
+  oqsJumpTrajectoryAdvance(trajectory, 0.1);
+  struct OqsAmplitude* finalState = oqsJumpTrajectoryGetState(trajectory);
+  EXPECT_FLOAT_EQ(0, finalState[0].im);
+  EXPECT_FLOAT_EQ(0, finalState[1].re);
+}
+
+TEST_F(RabiOscillations, NormConservation) {
+  oqsJumpTrajectoryAdvance(trajectory, 0.9);
+  struct OqsAmplitude* finalState = oqsJumpTrajectoryGetState(trajectory);
+  EXPECT_FLOAT_EQ(1, vecNormSquared(finalState, 2));
 }
