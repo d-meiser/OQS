@@ -118,3 +118,38 @@ TEST_F(RabiOscillations, PopulationOscillations) {
   double c = cos(0.5 * omega * t);
   EXPECT_FLOAT_EQ(c * c, normSquared(finalState + 0));
 }
+
+void ExcitedStateDecayRHS(double t, const struct OqsAmplitude* x,
+                         struct OqsAmplitude* y, void* ctx) {
+  double gamma = *(double*)ctx;
+  y[1].re = -0.5 * gamma * x[1].im;
+  y[1].im = -0.5 * gamma * x[1].re;
+}
+
+class ExcitedStateDecay : public JumpTrajectory {
+ public:
+  struct OqsSchrodingerEqn eqn;
+  std::vector<OqsAmplitude> initialState;
+  double gamma;
+  void SetUp() {
+    JumpTrajectory::SetUp();
+    gamma = 1.0;
+    eqn.RHS = &ExcitedStateDecayRHS;
+    eqn.ctx = (void*)&gamma;
+    oqsJumpTrajectorySetSchrodingerEqn(trajectory, &eqn);
+    initialState.resize(2);
+    initialState[0].re = 1;
+    initialState[0].im = 0;
+    initialState[1].re = 0;
+    initialState[1].im = 0;
+    oqsJumpTrajectorySetState(trajectory, &initialState[0]);
+  }
+  void TearDown() { JumpTrajectory::TearDown(); }
+};
+
+TEST_F(ExcitedStateDecay, NextDecayNorm) {
+  double z = oqsJumpTrajectoryGetNextDecayNorm(trajectory);
+  ASSERT_GE(z, 0);
+  ASSERT_LE(z, 1);
+}
+
