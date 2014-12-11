@@ -46,21 +46,32 @@ TEST_F(JumpTrajectory, GetTime) {
 void RabiOscillationsRHS(double t, const struct OqsAmplitude* x,
                          struct OqsAmplitude* y, void* ctx) {
   double omega = *(double*)ctx;
-  y[0].re = omega * x[1].im;
-  y[0].im = -omega * x[1].re;
-  y[1].re = omega * x[0].im;
-  y[1].im = -omega * x[0].re;
+  y[0].re = 0.5 * omega * x[1].im;
+  y[0].im = -0.5 * omega * x[1].re;
+  y[1].re = 0.5 * omega * x[0].im;
+  y[1].im = -0.5 * omega * x[0].re;
 }
 
-TEST_F(JumpTrajectory, Advance) {
+class RabiOscillations : public JumpTrajectory {
+ public:
   struct OqsSchrodingerEqn eqn;
-  eqn.RHS = &RabiOscillationsRHS;
-  double omega = 1.0;
-  eqn.ctx = (void*)&omega;
-  oqsJumpTrajectorySetSchrodingerEqn(trajectory, &eqn);
+  double omega;
+  void SetUp() {
+    JumpTrajectory::SetUp();
+    omega = 1.0;
+    eqn.RHS = &RabiOscillationsRHS;
+    eqn.ctx = (void*)&omega;
+    oqsJumpTrajectorySetSchrodingerEqn(trajectory, &eqn);
+  }
+  void TearDown() { JumpTrajectory::TearDown(); }
+};
 
+TEST_F(RabiOscillations, Advance) {
   double tstart = oqsJumpTrajectoryGetTime(trajectory);
   int decayOccurred = oqsJumpTrajectoryAdvance(trajectory, 1.0e-4);
   double tend = oqsJumpTrajectoryGetTime(trajectory);
   EXPECT_GT(tend, tstart);
+}
+
+TEST_F(RabiOscillations, PopulationOscillations) {
 }
