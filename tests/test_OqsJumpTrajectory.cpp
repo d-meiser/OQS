@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <OqsJumpTrajectory.h>
+#include <cmath>
 
 static double normSquared(const struct OqsAmplitude* a) {
   return a->re * a->re + a->im * a->im;
@@ -108,4 +109,12 @@ TEST_F(RabiOscillations, NormConservation) {
   oqsJumpTrajectoryAdvance(trajectory, 0.9);
   struct OqsAmplitude* finalState = oqsJumpTrajectoryGetState(trajectory);
   EXPECT_FLOAT_EQ(1, vecNormSquared(finalState, 2));
+}
+
+TEST_F(RabiOscillations, PopulationOscillations) {
+  double t = 0.3;
+  oqsJumpTrajectoryAdvance(trajectory, t);
+  struct OqsAmplitude* finalState = oqsJumpTrajectoryGetState(trajectory);
+  double c = cos(0.5 * omega * t);
+  EXPECT_FLOAT_EQ(c * c, normSquared(finalState + 0));
 }
