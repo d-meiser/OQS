@@ -52,6 +52,7 @@ OQS_STATUS oqsJumpTrajectorySetState(OqsJumpTrajectory trajectory,
 struct OqsAmplitude *oqsJumpTrajectoryGetState(OqsJumpTrajectory trajectory);
 double oqsJumpTrajectoryGetTime(OqsJumpTrajectory trajectory);
 int oqsJumpTrajectoryAdvance(OqsJumpTrajectory trajectory, double t);
+double oqsJumpTrajectoryGetNextDecayNorm(OqsJumpTrajectory trajectory);
 
 #ifdef __cplusplus
 }

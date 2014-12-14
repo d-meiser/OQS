@@ -74,3 +74,8 @@ int oqsJumpTrajectoryAdvance(OqsJumpTrajectory trajectory, double t)
 			    trajectory->schrodingerEqn->ctx);
 	return 0;
 }
+
+double oqsJumpTrajectoryGetNextDecayNorm(OqsJumpTrajectory trajectory)
+{
+	return trajectory->z;
+}
