@@ -160,4 +160,5 @@ TEST_F(ExcitedStateDecay, IntegrateToDecay) {
   std::cout << "decayTime == " << decayTime << std::endl;
   int decayOccurred = oqsJumpTrajectoryAdvance(trajectory, 1.2 * decayTime);
   ASSERT_NE(0, decayOccurred);
+  EXPECT_LE(std::abs(oqsJumpTrajectoryGetTime(trajectory) - decayTime), 1.0e-6);
 }
