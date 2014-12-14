@@ -10,6 +10,7 @@ struct OqsJumpTrajectory_ {
 	struct OqsSchrodingerEqn *schrodingerEqn;
 	double z;
 	struct Integrator integrator;
+	struct OqsAmplitude *lastState;
 };
 
 OQS_STATUS oqsJumpTrajectoryCreate(size_t dim, OqsJumpTrajectory *trajectory)
@@ -19,6 +20,13 @@ OQS_STATUS oqsJumpTrajectoryCreate(size_t dim, OqsJumpTrajectory *trajectory)
 	(*trajectory)->state =
 	    (struct OqsAmplitude *)malloc(dim * sizeof(*(*trajectory)->state));
 	if ((*trajectory)->state == 0) {
+		free(*trajectory);
+		*trajectory = 0;
+		return OQS_OUT_OF_MEMORY;
+	}
+	(*trajectory)->lastState = (struct OqsAmplitude *)malloc(
+	    dim * sizeof(*(*trajectory)->lastState));
+	if ((*trajectory)->lastState == 0) {
 		free(*trajectory);
 		*trajectory = 0;
 		return OQS_OUT_OF_MEMORY;
@@ -34,6 +42,7 @@ OQS_STATUS oqsJumpTrajectoryDestroy(OqsJumpTrajectory *trajectory)
 {
 	if (*trajectory) {
 		free((*trajectory)->state);
+		free((*trajectory)->lastState);
 	}
 	integratorDestroy(&(*trajectory)->integrator);
 	free(*trajectory);
@@ -67,12 +76,52 @@ double oqsJumpTrajectoryGetTime(OqsJumpTrajectory trajectory)
 	return integratorGetTime(&trajectory->integrator);
 }
 
+static void copyArray(struct OqsAmplitude *out, struct OqsAmplitude *in,
+		      int dim)
+{
+	int i;
+	for (i = 0; i < dim; ++i) {
+		out[i].re = in[i].re;
+		out[i].im = in[i].im;
+	}
+}
+
+static double normSquared(int dim, struct OqsAmplitude* x)
+{
+	double nrm = 0.0;
+	for (int i = 0; i < dim; ++i) {
+		nrm += x[i].re * x[i].re + x[i].im * x[i].im;
+	}
+	return nrm;
+}
+static int decayHappened(OqsJumpTrajectory trajectory)
+{
+	return normSquared(trajectory->dim, trajectory->state) < trajectory->z;
+}
+
 int oqsJumpTrajectoryAdvance(OqsJumpTrajectory trajectory, double t)
 {
-	integratorAdvanceTo(&trajectory->integrator, t, trajectory->state,
-			    trajectory->schrodingerEqn->RHS,
-			    trajectory->schrodingerEqn->ctx);
-	return 0;
+	double currentTime;
+	int decayed = 0;
+	while (1) {
+		currentTime = integratorGetTime(&trajectory->integrator);
+		if (currentTime > t) break;
+		decayed = decayHappened(trajectory);
+		if (decayed) break;
+		copyArray(trajectory->lastState, trajectory->state,
+			  trajectory->dim);
+		integratorTakeStep(&trajectory->integrator, trajectory->state,
+				   trajectory->schrodingerEqn->RHS,
+				   trajectory->schrodingerEqn->ctx);
+	}
+	if (currentTime > t) {
+		//findFinalTime
+	}
+	decayed = decayHappened(trajectory);
+	if (decayed) {
+		//findDecayTime
+	}
+	return decayed;
 }
 
 double oqsJumpTrajectoryGetNextDecayNorm(OqsJumpTrajectory trajectory)

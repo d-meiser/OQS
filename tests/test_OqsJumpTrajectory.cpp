@@ -122,8 +122,8 @@ TEST_F(RabiOscillations, PopulationOscillations) {
 void ExcitedStateDecayRHS(double t, const struct OqsAmplitude* x,
                          struct OqsAmplitude* y, void* ctx) {
   double gamma = *(double*)ctx;
-  y[1].re = -0.5 * gamma * x[1].im;
-  y[1].im = -0.5 * gamma * x[1].re;
+  y[1].re = -0.5 * gamma * x[1].re;
+  y[1].im = -0.5 * gamma * x[1].im;
 }
 
 class ExcitedStateDecay : public JumpTrajectory {
@@ -138,9 +138,9 @@ class ExcitedStateDecay : public JumpTrajectory {
     eqn.ctx = (void*)&gamma;
     oqsJumpTrajectorySetSchrodingerEqn(trajectory, &eqn);
     initialState.resize(2);
-    initialState[0].re = 1;
+    initialState[0].re = 0;
     initialState[0].im = 0;
-    initialState[1].re = 0;
+    initialState[1].re = 1;
     initialState[1].im = 0;
     oqsJumpTrajectorySetState(trajectory, &initialState[0]);
   }
@@ -153,3 +153,11 @@ TEST_F(ExcitedStateDecay, NextDecayNorm) {
   ASSERT_LE(z, 1);
 }
 
+TEST_F(ExcitedStateDecay, IntegrateToDecay) {
+  double z = oqsJumpTrajectoryGetNextDecayNorm(trajectory);
+  double decayTime = -log(z) / gamma;
+  std::cout << "z == " << z << std::endl;
+  std::cout << "decayTime == " << decayTime << std::endl;
+  int decayOccurred = oqsJumpTrajectoryAdvance(trajectory, 1.2 * decayTime);
+  ASSERT_NE(0, decayOccurred);
+}
