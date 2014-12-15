@@ -1,6 +1,8 @@
 #include <OqsJumpTrajectory.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
+#include <assert.h>
 #include <OqsAmplitude.h>
 #include <Integrator.h>
 
@@ -10,7 +12,8 @@ struct OqsJumpTrajectory_ {
 	struct OqsSchrodingerEqn *schrodingerEqn;
 	double z;
 	struct Integrator integrator;
-	struct OqsAmplitude *lastState;
+	struct OqsAmplitude *previousState;
+	double previousTime;
 };
 
 OQS_STATUS oqsJumpTrajectoryCreate(size_t dim, OqsJumpTrajectory *trajectory)
@@ -24,9 +27,9 @@ OQS_STATUS oqsJumpTrajectoryCreate(size_t dim, OqsJumpTrajectory *trajectory)
 		*trajectory = 0;
 		return OQS_OUT_OF_MEMORY;
 	}
-	(*trajectory)->lastState = (struct OqsAmplitude *)malloc(
-	    dim * sizeof(*(*trajectory)->lastState));
-	if ((*trajectory)->lastState == 0) {
+	(*trajectory)->previousState = (struct OqsAmplitude *)malloc(
+	    dim * sizeof(*(*trajectory)->previousState));
+	if ((*trajectory)->previousState == 0) {
 		free(*trajectory);
 		*trajectory = 0;
 		return OQS_OUT_OF_MEMORY;
@@ -42,7 +45,7 @@ OQS_STATUS oqsJumpTrajectoryDestroy(OqsJumpTrajectory *trajectory)
 {
 	if (*trajectory) {
 		free((*trajectory)->state);
-		free((*trajectory)->lastState);
+		free((*trajectory)->previousState);
 	}
 	integratorDestroy(&(*trajectory)->integrator);
 	free(*trajectory);
@@ -99,27 +102,98 @@ static int decayHappened(OqsJumpTrajectory trajectory)
 	return normSquared(trajectory->dim, trajectory->state) < trajectory->z;
 }
 
+static void backTrack(OqsJumpTrajectory trajectory)
+{
+	copyArray(trajectory->state, trajectory->previousState,
+		  trajectory->dim);
+	integratorSetTime(&trajectory->integrator, trajectory->previousTime);
+}
+
+static void findDecayTime(OqsJumpTrajectory trajectory)
+{
+	double tGuess, tLeft, tRight, normGuess, normLeft, normRight;
+	tLeft = trajectory->previousTime;
+	tRight = integratorGetTime(&trajectory->integrator);
+	assert(tRight > tLeft);
+
+	while (tRight - tLeft > 1.0e-8) {
+		normLeft =
+		    normSquared(trajectory->dim, trajectory->previousState);
+		assert(normLeft >= trajectory->z);
+		normRight = normSquared(trajectory->dim, trajectory->state);
+		assert(normRight <= trajectory->z);
+		// To find the decay time we assume that the square of the norm
+		// decays exponentially during the integration time interval.
+		// This is typically a better approximation than linear
+		// variation (which would lead to the secant method).
+		// Exponential decay is still monotonically decreasing, so we
+		// maintain the bracketing property of the secand method.  To
+		// find the new guess for the decay time based on the left and
+		// right ends of the interval, we use that
+		//      n(t) = nL exp(-gamma (t - tL))
+		// where nL is the norm at the beginning of the interval, tL.
+		// To find gamma we use that
+		//      n(tR) = nL exp(-gamma * (tR - tL)) == nR
+		//      => gamma = -log(nR / nL) / (tR - tL)
+		// The guess for the decay time is then found by solving
+		//      n(tGuess) == z
+		//      => nL exp(log(nR /nL)(tGuess - tL) / (tR - tL)) == z
+		//      => log(nR / nL)(tGuess - tL)/(tR - tL) = log (z / nL)
+		//      => tGuess = tL + (tR - tL) * log (z / nL) / log(nR / nL)
+		tGuess = tLeft +
+			 (tRight - tLeft) * log(trajectory->z / normLeft) /
+			     log(normRight / normLeft);
+
+		backTrack(trajectory);
+		integratorAdvanceTo(&trajectory->integrator, tGuess,
+				    trajectory->state,
+				    trajectory->schrodingerEqn->RHS,
+				    trajectory->schrodingerEqn->ctx);
+		normGuess = normSquared(trajectory->dim, trajectory->state);
+		if (normGuess > trajectory->z) {
+			normLeft = normGuess;
+			copyArray(trajectory->previousState, trajectory->state,
+				  trajectory->dim);
+			trajectory->previousTime =
+			    integratorGetTime(&trajectory->integrator);
+			tLeft = trajectory->previousTime;
+		} else {
+			normRight = normGuess;
+			tRight = integratorGetTime(&trajectory->integrator);
+		}
+	}
+}
+
 int oqsJumpTrajectoryAdvance(OqsJumpTrajectory trajectory, double t)
 {
 	double currentTime;
 	int decayed = 0;
+
+	currentTime = integratorGetTime(&trajectory->integrator);
+  if (currentTime > t) return decayed;
+
 	while (1) {
-		currentTime = integratorGetTime(&trajectory->integrator);
-		if (currentTime > t) break;
-		decayed = decayHappened(trajectory);
-		if (decayed) break;
-		copyArray(trajectory->lastState, trajectory->state,
+		copyArray(trajectory->previousState, trajectory->state,
 			  trajectory->dim);
+		trajectory->previousTime = currentTime;
 		integratorTakeStep(&trajectory->integrator, trajectory->state,
 				   trajectory->schrodingerEqn->RHS,
 				   trajectory->schrodingerEqn->ctx);
+		decayed = decayHappened(trajectory);
+		if (decayed) break;
+		currentTime = integratorGetTime(&trajectory->integrator);
+		if (currentTime > t) break;
 	}
 	if (currentTime > t) {
-		//findFinalTime
+		backTrack(trajectory);
+		integratorAdvanceTo(&trajectory->integrator, t,
+				    trajectory->state,
+				    trajectory->schrodingerEqn->RHS,
+				    trajectory->schrodingerEqn->ctx);
 	}
 	decayed = decayHappened(trajectory);
 	if (decayed) {
-		//findDecayTime
+		findDecayTime(trajectory);
 	}
 	return decayed;
 }
