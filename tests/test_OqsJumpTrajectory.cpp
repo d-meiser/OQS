@@ -56,6 +56,13 @@ TEST_F(JumpTrajectory, GetTime) {
   EXPECT_FLOAT_EQ(0, t);
 }
 
+TEST_F(JumpTrajectory, SetDecayTimeTolerance) {
+  double dt = 1.0e-12;
+  oqsJumpTrajectorySetDecayTimeTolerance(trajectory, dt);
+  double dtp = oqsJumpTrajectoryGetDecayTimeTolerance(trajectory);
+  EXPECT_FLOAT_EQ(dt, dtp);
+}
+
 void RabiOscillationsRHS(double t, const struct OqsAmplitude* x,
                          struct OqsAmplitude* y, void* ctx) {
   double omega = *(double*)ctx;
@@ -156,8 +163,6 @@ TEST_F(ExcitedStateDecay, NextDecayNorm) {
 TEST_F(ExcitedStateDecay, IntegrateToDecay) {
   double z = oqsJumpTrajectoryGetNextDecayNorm(trajectory);
   double decayTime = -log(z) / gamma;
-  std::cout << "z == " << z << std::endl;
-  std::cout << "decayTime == " << decayTime << std::endl;
   int decayOccurred = oqsJumpTrajectoryAdvance(trajectory, 1.2 * decayTime);
   ASSERT_NE(0, decayOccurred);
   EXPECT_LE(std::abs(oqsJumpTrajectoryGetTime(trajectory) - decayTime), 1.0e-6);

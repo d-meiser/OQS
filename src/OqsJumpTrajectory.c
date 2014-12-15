@@ -14,6 +14,8 @@ struct OqsJumpTrajectory_ {
 	struct Integrator integrator;
 	struct OqsAmplitude *previousState;
 	double previousTime;
+	double decayTimeTolerance;
+	double decayNormTolerance;
 };
 
 OQS_STATUS oqsJumpTrajectoryCreate(size_t dim, OqsJumpTrajectory *trajectory)
@@ -38,6 +40,8 @@ OQS_STATUS oqsJumpTrajectoryCreate(size_t dim, OqsJumpTrajectory *trajectory)
 	(*trajectory)->schrodingerEqn = 0;
 	(*trajectory)->z = (double)rand() / RAND_MAX;
 	integratorCreate(&(*trajectory)->integrator, dim);
+	(*trajectory)->decayTimeTolerance = 1.0e-7;
+	(*trajectory)->decayNormTolerance = 1.0e-12;
 	return OQS_SUCCESS;
 }
 
@@ -79,6 +83,17 @@ double oqsJumpTrajectoryGetTime(OqsJumpTrajectory trajectory)
 	return integratorGetTime(&trajectory->integrator);
 }
 
+void oqsJumpTrajectorySetDecayTimeTolerance(OqsJumpTrajectory trajectory,
+					    double tol)
+{
+	trajectory->decayTimeTolerance = tol;
+}
+
+double oqsJumpTrajectoryGetDecayTimeTolerance(OqsJumpTrajectory trajectory)
+{
+	return trajectory->decayTimeTolerance;
+}
+
 static void copyArray(struct OqsAmplitude *out, struct OqsAmplitude *in,
 		      int dim)
 {
@@ -116,7 +131,7 @@ static void findDecayTime(OqsJumpTrajectory trajectory)
 	tRight = integratorGetTime(&trajectory->integrator);
 	assert(tRight > tLeft);
 
-	while (tRight - tLeft > 1.0e-8) {
+	while (tRight - tLeft > trajectory->decayTimeTolerance) {
 		normLeft =
 		    normSquared(trajectory->dim, trajectory->previousState);
 		assert(normLeft >= trajectory->z);
@@ -150,6 +165,10 @@ static void findDecayTime(OqsJumpTrajectory trajectory)
 				    trajectory->schrodingerEqn->RHS,
 				    trajectory->schrodingerEqn->ctx);
 		normGuess = normSquared(trajectory->dim, trajectory->state);
+		if (abs(normGuess - trajectory->z) <
+		    trajectory->decayNormTolerance) {
+			return;
+		}
 		if (normGuess > trajectory->z) {
 			normLeft = normGuess;
 			copyArray(trajectory->previousState, trajectory->state,
