@@ -20,5 +20,6 @@ with oqs.  If not, see <http://www.gnu.org/licenses/>.
 #define OQS_H
 
 #include <OqsAmplitude.h>
+#include <OqsJumpTrajectory.h>
 
 #endif

@@ -60,6 +60,7 @@ include_directories(${PROJECT_BINARY_DIR})
 
 add_subdirectory(include)
 add_subdirectory(src)
+add_subdirectory(examples)
 if(BUILD_TESTS)
   add_subdirectory(gtest-1.7.0)
   include_directories(${gtest_SOURCE_DIR}/include)

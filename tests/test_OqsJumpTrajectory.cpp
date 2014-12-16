@@ -63,8 +63,8 @@ TEST_F(JumpTrajectory, SetDecayTimeTolerance) {
   EXPECT_FLOAT_EQ(dt, dtp);
 }
 
-void RabiOscillationsRHS(double t, const struct OqsAmplitude* x,
-                         struct OqsAmplitude* y, void* ctx) {
+static void RabiOscillationsRHS(double t, const struct OqsAmplitude* x,
+                                struct OqsAmplitude* y, void* ctx) {
   double omega = *(double*)ctx;
   y[0].re = 0.5 * omega * x[1].im;
   y[0].im = -0.5 * omega * x[1].re;
@@ -126,7 +126,7 @@ TEST_F(RabiOscillations, PopulationOscillations) {
   EXPECT_FLOAT_EQ(c * c, normSquared(finalState + 0));
 }
 
-void ExcitedStateDecayRHS(double t, const struct OqsAmplitude* x,
+static void ExcitedStateDecayRHS(double t, const struct OqsAmplitude* x,
                          struct OqsAmplitude* y, void* ctx) {
   double gamma = *(double*)ctx;
   y[1].re = -0.5 * gamma * x[1].re;
