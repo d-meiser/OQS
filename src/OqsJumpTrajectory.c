@@ -245,10 +245,28 @@ int oqsJumpTrajectoryGetDecay(OqsJumpTrajectory trajectory, int numDecayOps,
 		    probabilities[i] +
 		    normSquared(trajectory->dim, trajectory->work);
 	}
-	z = rand() / RAND_MAX * probabilities[numDecayOps];
+	z = (double)rand() / RAND_MAX * probabilities[numDecayOps];
 	i = 0;
-	while (probabilities[i] < z) {
+	while (probabilities[i + 1] < z) {
 		++i;
 	}
 	return i;
+}
+
+void oqsJumpTrajectoryApplyDecay(OqsJumpTrajectory trajectory,
+				 struct OqsDecayOperator *decayOp)
+{
+	double nrm;
+	int i;
+
+	decayOp->apply(trajectory->state, trajectory->previousState,
+		       decayOp->ctx);
+	nrm = sqrt(normSquared(trajectory->dim, trajectory->previousState));
+	for (i = 0; i < trajectory->dim; ++i) {
+		trajectory->previousState[i].re /= nrm;
+		trajectory->previousState[i].im /= nrm;
+	}
+	copyArray(trajectory->state, trajectory->previousState,
+		  trajectory->dim);
+	trajectory->z = (double)rand() / RAND_MAX;
 }

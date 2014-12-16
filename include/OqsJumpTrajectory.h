@@ -58,6 +58,8 @@ void oqsJumpTrajectorySetDecayTimeTolerance(OqsJumpTrajectory trajectory,
 double oqsJumpTrajectoryGetDecayTimeTolerance(OqsJumpTrajectory trajectory);
 int oqsJumpTrajectoryGetDecay(OqsJumpTrajectory trajectory, int numDecayOps,
 			      struct OqsDecayOperator *decayOps);
+void oqsJumpTrajectoryApplyDecay(OqsJumpTrajectory trajectory,
+				 struct OqsDecayOperator *decayOp);
 
 #ifdef __cplusplus
 }
