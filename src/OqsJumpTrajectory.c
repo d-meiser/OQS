@@ -16,6 +16,7 @@ struct OqsJumpTrajectory_ {
 	double previousTime;
 	double decayTimeTolerance;
 	double decayNormTolerance;
+  struct OqsAmplitude *work;
 };
 
 OQS_STATUS oqsJumpTrajectoryCreate(size_t dim, OqsJumpTrajectory *trajectory)
@@ -42,6 +43,13 @@ OQS_STATUS oqsJumpTrajectoryCreate(size_t dim, OqsJumpTrajectory *trajectory)
 	integratorCreate(&(*trajectory)->integrator, dim);
 	(*trajectory)->decayTimeTolerance = 1.0e-7;
 	(*trajectory)->decayNormTolerance = 1.0e-12;
+	(*trajectory)->work =
+	    (struct OqsAmplitude *)malloc(dim * sizeof(*(*trajectory)->work));
+	if ((*trajectory)->work == 0) {
+		free(*trajectory);
+		*trajectory = 0;
+		return OQS_OUT_OF_MEMORY;
+	}
 	return OQS_SUCCESS;
 }
 
@@ -50,6 +58,7 @@ OQS_STATUS oqsJumpTrajectoryDestroy(OqsJumpTrajectory *trajectory)
 	if (*trajectory) {
 		free((*trajectory)->state);
 		free((*trajectory)->previousState);
+		free((*trajectory)->work);
 	}
 	integratorDestroy(&(*trajectory)->integrator);
 	free(*trajectory);
@@ -189,7 +198,7 @@ int oqsJumpTrajectoryAdvance(OqsJumpTrajectory trajectory, double t)
 	int decayed = 0;
 
 	currentTime = integratorGetTime(&trajectory->integrator);
-  if (currentTime > t) return decayed;
+	if (currentTime > t) return decayed;
 
 	while (1) {
 		copyArray(trajectory->previousState, trajectory->state,
@@ -220,4 +229,44 @@ int oqsJumpTrajectoryAdvance(OqsJumpTrajectory trajectory, double t)
 double oqsJumpTrajectoryGetNextDecayNorm(OqsJumpTrajectory trajectory)
 {
 	return trajectory->z;
+}
+
+int oqsJumpTrajectoryGetDecay(OqsJumpTrajectory trajectory, int numDecayOps,
+			      struct OqsDecayOperator *decayOps)
+{
+	double probabilities[numDecayOps + 1];
+	double z;
+	int i;
+	probabilities[0] = 0;
+	for (i = 0; i < numDecayOps; ++i) {
+		decayOps[i].apply(trajectory->state, trajectory->work,
+				  decayOps[i].ctx);
+		probabilities[i + 1] =
+		    probabilities[i] +
+		    normSquared(trajectory->dim, trajectory->work);
+	}
+	z = (double)rand() / RAND_MAX * probabilities[numDecayOps];
+	i = 0;
+	while (probabilities[i + 1] < z) {
+		++i;
+	}
+	return i;
+}
+
+void oqsJumpTrajectoryApplyDecay(OqsJumpTrajectory trajectory,
+				 struct OqsDecayOperator *decayOp)
+{
+	double nrm;
+	int i;
+
+	decayOp->apply(trajectory->state, trajectory->previousState,
+		       decayOp->ctx);
+	nrm = sqrt(normSquared(trajectory->dim, trajectory->previousState));
+	for (i = 0; i < trajectory->dim; ++i) {
+		trajectory->previousState[i].re /= nrm;
+		trajectory->previousState[i].im /= nrm;
+	}
+	copyArray(trajectory->state, trajectory->previousState,
+		  trajectory->dim);
+	trajectory->z = (double)rand() / RAND_MAX;
 }

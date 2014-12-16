@@ -167,3 +167,61 @@ TEST_F(ExcitedStateDecay, IntegrateToDecay) {
   ASSERT_NE(0, decayOccurred);
   EXPECT_LE(std::abs(oqsJumpTrajectoryGetTime(trajectory) - decayTime), 1.0e-6);
 }
+
+struct EToGCtx {
+  int dim;
+  double gamma;
+};
+
+void excitedToGroundDecay(const struct OqsAmplitude *x, struct OqsAmplitude *y, void *ctx) {
+  struct EToGCtx* c = (struct EToGCtx*)ctx;
+  for (int i = 0; i < c->dim; ++i) {
+    y[i].re = 0;
+    y[i].im = 0;
+  }
+  double sgamma = sqrt(c->gamma);
+  y[0].re = sgamma * x[1].re;
+  y[0].im = sgamma * x[1].im;
+}
+
+TEST_F(ExcitedStateDecay, GetDecay) {
+  struct OqsDecayOperator decayOperator;
+  decayOperator.apply = excitedToGroundDecay;
+  struct EToGCtx ctx;
+  ctx.dim = 2;
+  ctx.gamma = 1.0;
+  decayOperator.ctx = &ctx;
+  int i = oqsJumpTrajectoryGetDecay(trajectory, 1, &decayOperator);
+  EXPECT_EQ(0, i);
+}
+
+TEST_F(ExcitedStateDecay, StateNormalizedAfterDecay) {
+  oqsJumpTrajectoryAdvance(trajectory, 0.1);
+  struct OqsDecayOperator decayOperator;
+  decayOperator.apply = excitedToGroundDecay;
+  struct EToGCtx ctx;
+  ctx.dim = 2;
+  ctx.gamma = 1.0;
+  decayOperator.ctx = &ctx;
+  oqsJumpTrajectoryApplyDecay(trajectory, &decayOperator);
+  struct OqsAmplitude* postDecayState = oqsJumpTrajectoryGetState(trajectory);
+  double nrm = 0;
+  for (int i = 0; i < 2; ++i) {
+    nrm += postDecayState[i].re * postDecayState[i].re +
+           postDecayState[i].im * postDecayState[i].im;
+  }
+  EXPECT_FLOAT_EQ(1.0, nrm);
+}
+
+TEST_F(ExcitedStateDecay, NextDecayNormReset) {
+  struct OqsDecayOperator decayOperator;
+  decayOperator.apply = excitedToGroundDecay;
+  struct EToGCtx ctx;
+  ctx.dim = 2;
+  ctx.gamma = 1.0;
+  decayOperator.ctx = &ctx;
+  double preDecayNrm = oqsJumpTrajectoryGetNextDecayNorm(trajectory);
+  oqsJumpTrajectoryApplyDecay(trajectory, &decayOperator);
+  double postDecayNrm = oqsJumpTrajectoryGetNextDecayNorm(trajectory);
+  EXPECT_NE(preDecayNrm, postDecayNrm);
+}
