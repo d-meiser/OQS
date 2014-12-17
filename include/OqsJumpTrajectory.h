@@ -51,6 +51,7 @@ OQS_STATUS oqsJumpTrajectorySetState(OqsJumpTrajectory trajectory,
 				     const struct OqsAmplitude *state);
 struct OqsAmplitude *oqsJumpTrajectoryGetState(OqsJumpTrajectory trajectory);
 double oqsJumpTrajectoryGetTime(OqsJumpTrajectory trajectory);
+void oqsJumpTrajectorySetTime(OqsJumpTrajectory trajectory, double t);
 int oqsJumpTrajectoryAdvance(OqsJumpTrajectory trajectory, double t);
 double oqsJumpTrajectoryGetNextDecayNorm(OqsJumpTrajectory trajectory);
 void oqsJumpTrajectorySetDecayTimeTolerance(OqsJumpTrajectory trajectory,
@@ -60,6 +61,8 @@ int oqsJumpTrajectoryGetDecay(OqsJumpTrajectory trajectory, int numDecayOps,
 			      struct OqsDecayOperator *decayOps);
 void oqsJumpTrajectoryApplyDecay(OqsJumpTrajectory trajectory,
 				 struct OqsDecayOperator *decayOp);
+void oqsJumpTrajectoryReset(OqsJumpTrajectory trajectory,
+			    const struct OqsAmplitude *initialState, double t);
 
 #ifdef __cplusplus
 }

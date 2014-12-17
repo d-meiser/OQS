@@ -77,10 +77,11 @@ static double nrmSquared(OqsJumpTrajectory trajectory)
 int main(int argn, char **argv)
 {
 	double tmax, t, dt;
-	double omega;
 	OQS_STATUS stat;
 	OqsJumpTrajectory trajectory;
 	struct OqsAmplitude initialState[2];
+	int i;
+	int numTrajectories = 10000;
 
 	stat = oqsJumpTrajectoryCreate(2, &trajectory);
 	assert(stat == OQS_SUCCESS);
@@ -89,7 +90,6 @@ int main(int argn, char **argv)
 	initialState[0].im = 0.0;
 	initialState[1].re = 0.0;
 	initialState[1].im = 0.0;
-	oqsJumpTrajectorySetState(trajectory, initialState);
 
 	struct OqsDecayOperator decay;
 	decay.apply = &excitedToGroundDecay;
@@ -108,15 +108,20 @@ int main(int argn, char **argv)
 	oqsJumpTrajectorySetSchrodingerEqn(trajectory, &eqn);
 
 	tmax = 20.0;
-	t = oqsJumpTrajectoryGetTime(trajectory);
 	dt = 0.1;
-	while (t < tmax) {
-		printf("%lf %lf %lf\n", t, excitedStatePopulation(trajectory),
+	for (i = 0; i < numTrajectories; ++i) {
+		t = 0;
+		oqsJumpTrajectoryReset(trajectory, initialState, t);
+		while (t < tmax) {
+			printf("%d %lf %lf %lf\n", i, t,
+			       excitedStatePopulation(trajectory),
+			       nrmSquared(trajectory));
+			advanceTo(trajectory, 1, &decay, t + dt);
+			t = oqsJumpTrajectoryGetTime(trajectory);
+		}
+		printf("%d %lf %lf %lf\n", i, t,
+		       excitedStatePopulation(trajectory),
 		       nrmSquared(trajectory));
-		advanceTo(trajectory, 1, &decay, t + dt);
-		t = oqsJumpTrajectoryGetTime(trajectory);
 	}
-	printf("%lf %lf %lf\n", t, excitedStatePopulation(trajectory),
-	       nrmSquared(trajectory));
 	oqsJumpTrajectoryDestroy(&trajectory);
 }

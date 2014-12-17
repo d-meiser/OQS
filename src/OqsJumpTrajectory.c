@@ -92,6 +92,11 @@ double oqsJumpTrajectoryGetTime(OqsJumpTrajectory trajectory)
 	return integratorGetTime(&trajectory->integrator);
 }
 
+void oqsJumpTrajectorySetTime(OqsJumpTrajectory trajectory, double t)
+{
+	integratorSetTime(&trajectory->integrator, t);
+}
+
 void oqsJumpTrajectorySetDecayTimeTolerance(OqsJumpTrajectory trajectory,
 					    double tol)
 {
@@ -268,5 +273,13 @@ void oqsJumpTrajectoryApplyDecay(OqsJumpTrajectory trajectory,
 	}
 	copyArray(trajectory->state, trajectory->previousState,
 		  trajectory->dim);
+	trajectory->z = (double)rand() / RAND_MAX;
+}
+
+void oqsJumpTrajectoryReset(OqsJumpTrajectory trajectory,
+			    const struct OqsAmplitude *initialState, double t)
+{
+	oqsJumpTrajectorySetState(trajectory, initialState);
+	oqsJumpTrajectorySetTime(trajectory, t);
 	trajectory->z = (double)rand() / RAND_MAX;
 }
