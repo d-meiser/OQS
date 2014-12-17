@@ -56,6 +56,34 @@ TEST_F(JumpTrajectory, GetTime) {
   EXPECT_FLOAT_EQ(0, t);
 }
 
+TEST_F(JumpTrajectory, SetTime) {
+  double t = 0.29;
+  oqsJumpTrajectorySetTime(trajectory, t);
+  double tNew = oqsJumpTrajectoryGetTime(trajectory);
+  EXPECT_FLOAT_EQ(t, tNew);
+}
+
+TEST_F(JumpTrajectory, Reset) {
+  double t = 0.29;
+  struct OqsAmplitude initialState[2];
+  initialState[0].re = 2.0;
+  initialState[0].im = 1.0;
+  initialState[1].re = 3.0;
+  initialState[1].im = 9.0;
+  double oldZ = oqsJumpTrajectoryGetNextDecayNorm(trajectory);
+  oqsJumpTrajectoryReset(trajectory, initialState, t);
+  double tNew = oqsJumpTrajectoryGetTime(trajectory);
+  EXPECT_FLOAT_EQ(t, tNew);
+  struct OqsAmplitude *newState = oqsJumpTrajectoryGetState(trajectory);
+  EXPECT_FLOAT_EQ(initialState[0].re, newState[0].re);
+  EXPECT_FLOAT_EQ(initialState[0].im, newState[0].im);
+  EXPECT_FLOAT_EQ(initialState[1].re, newState[1].re);
+  EXPECT_FLOAT_EQ(initialState[1].im, newState[1].im);
+  double newZ = oqsJumpTrajectoryGetNextDecayNorm(trajectory);
+  EXPECT_NE(oldZ, newZ);
+}
+
+
 TEST_F(JumpTrajectory, SetDecayTimeTolerance) {
   double dt = 1.0e-12;
   oqsJumpTrajectorySetDecayTimeTolerance(trajectory, dt);
