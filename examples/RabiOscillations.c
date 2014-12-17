@@ -81,7 +81,7 @@ int main(int argn, char **argv)
 	OqsJumpTrajectory trajectory;
 	struct OqsAmplitude initialState[2];
 	int i;
-	int numTrajectories = 10000;
+	int numTrajectories = 10;
 
 	stat = oqsJumpTrajectoryCreate(2, &trajectory);
 	assert(stat == OQS_SUCCESS);
