@@ -19,7 +19,12 @@ with oqs.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef OQS_H
 #define OQS_H
 
+#include <OqsConfig.h>
+
 #include <OqsAmplitude.h>
 #include <OqsJumpTrajectory.h>
+#ifdef OQS_WITH_MBO
+#include <OqsMbo.h>
+#endif
 
 #endif

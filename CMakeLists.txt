@@ -58,6 +58,8 @@ elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
 elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "Intel")
 endif()
 
+configure_file(OqsConfig.h.in OqsConfig.h)
+install(FILES ${CMAKE_BINARY_DIR}/OqsConfig.h DESTINATION include)
 include_directories(${PROJECT_BINARY_DIR})
 
 if(OQS_WITH_MBO)
@@ -73,6 +75,7 @@ if(OQS_BUILD_TESTS)
 endif()
 
 generate_export_header(OQS EXPORT_FILE_NAME OqsExport.h)
+install(FILES ${CMAKE_BINARY_DIR}/OqsExport.h DESTINATION include)
 
 if(OQS_BUILD_DOCS)
   find_package(Doxygen)

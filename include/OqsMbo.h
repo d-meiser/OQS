@@ -19,4 +19,10 @@ with oqs.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef OQS_MBO_H
 #define OQS_MBO_H
 
+#include <OqsConfig.h>
+#ifndef OQS_WITH_MBO
+#error "This version of OQS has been configure without MBO support.\n" \
+       "Please reconfigure with MBO support enabled.\n"
+#endif
+
 #endif
