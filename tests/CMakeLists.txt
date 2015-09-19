@@ -13,7 +13,7 @@ set(TESTS
 foreach(t ${TESTS})
   add_executable(${t} ${t}.cpp)
   target_link_libraries(${t} OQS gtest_main gtest)
-  if(ENABLE_COVERAGE)
+  if(OQS_ENABLE_COVERAGE)
     target_link_libraries(${t} "${COV_LIBRARIES}")
   endif()
   add_test(${t} ${t})
