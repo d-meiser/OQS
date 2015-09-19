@@ -14,6 +14,8 @@ option(BUILD_DOCS
     "Whether to build documentation" OFF)
 option(BUILD_TESTS
     "Whether to build tests" OFF)
+option(WITH_MBO
+    "Whether to build with MBO support" OFF)
 
 set(COV_LIBRARIES "")
 if(CMAKE_COMPILER_IS_GNUCC)
@@ -58,6 +60,9 @@ endif()
 
 include_directories(${PROJECT_BINARY_DIR})
 
+if(WITH_MBO)
+  add_subdirectory(mbo)
+endif()
 add_subdirectory(include)
 add_subdirectory(src)
 add_subdirectory(examples)
