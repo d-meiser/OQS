@@ -8,7 +8,7 @@ set(OQS_SRCS
     OqsJumpTrajectory.c
    )
 
-add_library(OQS ${OQS_SRCS})
+add_library(OQS ${OQS_SRCS} ${OQS_HEADERS})
 
 if(UNIX)
   target_link_libraries(OQS m)
