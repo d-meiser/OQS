@@ -7,6 +7,9 @@ set(OQS_SRCS
     Integrator.c
     OqsJumpTrajectory.c
    )
+if(OQS_WITH_MBO)
+  list(APPEND OQS_SRCS OqsMbo.c)
+endif()
 
 add_library(OQS ${OQS_SRCS} ${OQS_HEADERS})
 

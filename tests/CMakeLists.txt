@@ -9,6 +9,9 @@ set(TESTS
   test_Integrator
   test_OqsJumpTrajectory
   )
+if(OQS_WITH_MBO)
+  list(APPEND TESTS test_OqsMbo)
+endif()
 
 foreach(t ${TESTS})
   add_executable(${t} ${t}.cpp)
