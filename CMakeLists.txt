@@ -6,14 +6,16 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${PROJECT_SOURCE_DIR}/cmake")
 include(AddCCompilerFlagIfSupported)
 include(AddCLinkerFlagIfSupported)
 
-option(RUN_EXAMPLES_AS_TESTS 
+option(OQS_RUN_EXAMPLES_AS_TESTS 
     "Whether to run the examples as part of the test suite" OFF)
-option(ENABLE_COVERAGE
+option(OQS_ENABLE_COVERAGE
     "Instrument tests for coverage" OFF)
-option(BUILD_DOCS
+option(OQS_BUILD_DOCS
     "Whether to build documentation" OFF)
-option(BUILD_TESTS
+option(OQS_BUILD_TESTS
     "Whether to build tests" OFF)
+option(OQS_WITH_MBO
+    "Whether to build with MBO support" OFF)
 
 set(COV_LIBRARIES "")
 if(CMAKE_COMPILER_IS_GNUCC)
@@ -23,7 +25,7 @@ if(CMAKE_COMPILER_IS_GNUCC)
   if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     add_c_compiler_flag_if_supported("-fsanitize=address")
   endif()
-  if(ENABLE_COVERAGE)
+  if(OQS_ENABLE_COVERAGE)
     add_definitions("-ftest-coverage -fprofile-arcs")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ftest-coverage -fprofile-arcs")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ftest-coverage -fprofile-arcs")
@@ -38,7 +40,7 @@ elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
     set(CMAKE_CXX_COMPILER ${CLANG_PATH}/clang++)
   endif()
   set(WARNING_FLAGS "-Wall -Wpedantic")
-  if(ENABLE_COVERAGE)
+  if(OQS_ENABLE_COVERAGE)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ftest-coverage -fprofile-arcs")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ftest-coverage -fprofile-arcs")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -ftest-coverage -fprofile-arcs")
@@ -56,20 +58,26 @@ elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
 elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "Intel")
 endif()
 
+configure_file(OqsConfig.h.in OqsConfig.h)
+install(FILES ${CMAKE_BINARY_DIR}/OqsConfig.h DESTINATION include)
 include_directories(${PROJECT_BINARY_DIR})
 
+if(OQS_WITH_MBO)
+  add_subdirectory(mbo)
+endif()
 add_subdirectory(include)
 add_subdirectory(src)
 add_subdirectory(examples)
-if(BUILD_TESTS)
+if(OQS_BUILD_TESTS)
   add_subdirectory(gtest-1.7.0)
   include_directories(${gtest_SOURCE_DIR}/include)
   add_subdirectory(tests)
 endif()
 
 generate_export_header(OQS EXPORT_FILE_NAME OqsExport.h)
+install(FILES ${CMAKE_BINARY_DIR}/OqsExport.h DESTINATION include)
 
-if(BUILD_DOCS)
+if(OQS_BUILD_DOCS)
   find_package(Doxygen)
   if(DOXYGEN_FOUND)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/doxyfile @ONLY)

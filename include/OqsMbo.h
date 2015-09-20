@@ -16,15 +16,33 @@ for more details.
 You should have received a copy of the GNU General Public License along
 with oqs.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef OQS_H
-#define OQS_H
+#ifndef OQS_MBO_H
+#define OQS_MBO_H
 
 #include <OqsConfig.h>
-
-#include <OqsAmplitude.h>
-#include <OqsJumpTrajectory.h>
-#ifdef OQS_WITH_MBO
-#include <OqsMbo.h>
+#ifndef OQS_WITH_MBO
+#error "This version of OQS has been configure without MBO support.\n" \
+       "Please reconfigure with MBO support enabled.\n"
 #endif
 
+#include <OqsExport.h>
+#include <OqsErrors.h>
+#include <OqsJumpTrajectory.h>
+#include <MboTensorOp.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+OQS_EXPORT OQS_STATUS
+oqsMboCreateDecayOperator(MboTensorOp op, struct OqsDecayOperator *dop);
+OQS_EXPORT OQS_STATUS oqsMboDestroyDecayOperator(struct OqsDecayOperator *dop);
+OQS_EXPORT OQS_STATUS oqsMboCreateSchrodingerEqn(MboTensorOp hamiltonian,
+						 struct OqsSchrodingerEqn *eqn);
+OQS_EXPORT OQS_STATUS
+oqsMboDestroySchrodingerEqn(struct OqsSchrodingerEqn *eqn);
+
+#ifdef __cplusplus
+}
+#endif
 #endif

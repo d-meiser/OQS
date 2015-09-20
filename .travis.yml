@@ -1,30 +1,39 @@
+sudo: false
 language: c
 compiler:
   - gcc
   - clang
+env:
+  - WITH_MBO="ON"
+  - WITH_MBO="OFF"
+
+addons:
+  apt:
+    packages:
+    - cmake
+    - lcov
+
 before_install:
   - if [ "$CC" == "clang" ] ; then export CXX=clang++ ; fi
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq lcov
   - gem install coveralls-lcov
   - sh ./utilities/download_gtest.sh
+  - if [ "$WITH_MBO" = "ON" ]; then ./utilities/download_mbo.sh; fi
 script:
   - mkdir -p build
   - cd build
-  - cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=ON -DBUILD_TESTS=ON -DRUN_EXAMPLES_AS_TESTS=ON ..
+  - cmake -DCMAKE_BUILD_TYPE=Debug -DOQS_ENABLE_COVERAGE=ON -DOQS_BUILD_TESTS=ON -DOQS_RUN_EXAMPLES_AS_TESTS=ON -DOQS_WITH_MBO=$WITH_MBO ..
   - make -j4
-  - ctest -j4 --output-on-failure
+  - ctest --output-on-failure
   - rm -rf *
-  - cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=ON -DBUILD_TESTS=ON -DRUN_EXAMPLES_AS_TESTS=ON -DBUILD_SHARED_LIBS=ON ..
+  - cmake -DCMAKE_BUILD_TYPE=Debug -DOQS_ENABLE_COVERAGE=ON -DOQS_BUILD_TESTS=ON -DOQS_RUN_EXAMPLES_AS_TESTS=ON -DOQS_WITH_MBO=$WITH_MBO -DBUILD_SHARED_LIBS=ON ..
   - make -j4 
-  - ctest -j4 --output-on-failure
-  - rm -rf *
-  - cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=ON -DBUILD_SHARED_LIBS=ON -DRUN_EXAMPLES_AS_TESTS=ON  -DBUILD_TESTS=ON ..
-  - make -j2
-  - ctest -j2 --output-on-failure
+  - ctest --output-on-failure
 after_success:
-  - lcov -d tests -d src -base-directory .. -c -o coverage.info
-  - lcov --remove coverage.info '/usr/*' -o coverage.info
-  - lcov --remove coverage.info 'gtest*' -o coverage.info
-  - cd ..
-  - coveralls-lcov build/coverage.info
+  - if [ "$WITH_MBO" = "OFF" ];
+    then
+      lcov -d tests -d src -base-directory .. -c -o coverage.info;
+      lcov --remove coverage.info '/usr/*' -o coverage.info;
+      lcov --remove coverage.info 'gtest*' -o coverage.info;
+      cd ..;
+      coveralls-lcov build/coverage.info;
+    fi

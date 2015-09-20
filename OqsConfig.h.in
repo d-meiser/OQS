@@ -1,0 +1,3 @@
+/* Whether built with mbo support */
+#cmakedefine OQS_WITH_MBO
+
