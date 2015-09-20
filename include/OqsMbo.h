@@ -25,4 +25,7 @@ with oqs.  If not, see <http://www.gnu.org/licenses/>.
        "Please reconfigure with MBO support enabled.\n"
 #endif
 
+struct OqsMboOperator_;
+typedef struct OqsMboOperator_ *OqsMboOperator;
+
 #endif
