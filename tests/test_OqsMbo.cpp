@@ -41,7 +41,7 @@ TEST_F(DecayOperator, CanBeConstructedFromMboOperator) {
   OQS_STATUS stat = oqsMboCreateDecayOperator(op, &decayOperator);
   ASSERT_EQ(OQS_SUCCESS, stat);
   EXPECT_TRUE(0 != decayOperator.ctx);
-  stat = oqsMboDestroy(&decayOperator);
+  stat = oqsMboDestroyDecayOperator(&decayOperator);
   ASSERT_EQ(OQS_SUCCESS, stat);
 }
 
@@ -55,5 +55,30 @@ TEST_F(DecayOperator, CanBeApplied) {
   EXPECT_FLOAT_EQ(-x[0].im, y[0].im);
   EXPECT_FLOAT_EQ(x[1].re, y[1].re);
   EXPECT_FLOAT_EQ(x[1].im, y[1].im);
-  stat = oqsMboDestroy(&decayOperator);
+  stat = oqsMboDestroyDecayOperator(&decayOperator);
+}
+
+
+typedef DecayOperator SchrodingerEqn;
+
+TEST_F(SchrodingerEqn, CanBeConstructedFromMboOperator) {
+  struct OqsSchrodingerEqn schEqn = {0};
+  OQS_STATUS stat = oqsMboCreateSchrodingerEqn(op, &schEqn);
+  ASSERT_EQ(OQS_SUCCESS, stat);
+  EXPECT_TRUE(0 != schEqn.ctx);
+  stat = oqsMboDestroySchrodingerEqn(&schEqn);
+  ASSERT_EQ(OQS_SUCCESS, stat);
+}
+
+TEST_F(SchrodingerEqn, CanBeApplied) {
+  struct OqsSchrodingerEqn schEqn = {0};
+  OQS_STATUS stat = oqsMboCreateSchrodingerEqn(op, &schEqn);
+  struct OqsAmplitude x[2] = {{2.3, 1.7}, {5.2, -1.8}};
+  struct OqsAmplitude y[2] = {{0}};
+  schEqn.RHS(0, x, y, schEqn.ctx);
+  EXPECT_FLOAT_EQ(-x[0].im, y[0].re);
+  EXPECT_FLOAT_EQ(x[0].re, y[0].im);
+  EXPECT_FLOAT_EQ(x[1].im, y[1].re);
+  EXPECT_FLOAT_EQ(-x[1].re, y[1].im);
+  stat = oqsMboDestroySchrodingerEqn(&schEqn);
 }

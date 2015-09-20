@@ -36,7 +36,11 @@ extern "C" {
 
 OQS_EXPORT OQS_STATUS
 oqsMboCreateDecayOperator(MboTensorOp op, struct OqsDecayOperator *dop);
-OQS_EXPORT OQS_STATUS oqsMboDestroy(struct OqsDecayOperator *dop);
+OQS_EXPORT OQS_STATUS oqsMboDestroyDecayOperator(struct OqsDecayOperator *dop);
+OQS_EXPORT OQS_STATUS oqsMboCreateSchrodingerEqn(MboTensorOp hamiltonian,
+						 struct OqsSchrodingerEqn *eqn);
+OQS_EXPORT OQS_STATUS
+oqsMboDestroySchrodingerEqn(struct OqsSchrodingerEqn *eqn);
 
 #ifdef __cplusplus
 }

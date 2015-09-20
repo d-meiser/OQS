@@ -34,6 +34,16 @@ static void oqsMboApply(const struct OqsAmplitude *x, struct OqsAmplitude *y,
 		       (struct MboAmplitude *)y);
 }
 
+static void oqsMboSchEqnApply(double t, const struct OqsAmplitude *x,
+			      struct OqsAmplitude *y, void *ctx)
+{
+	static const struct MboAmplitude alpha = {0, -1.0};
+	static const struct MboAmplitude beta = {0};
+	struct OqsMboOperator *opCtx = ctx;
+	mboNumOpMatVec(alpha, opCtx->op, (struct MboAmplitude *)x, beta,
+		       (struct MboAmplitude *)y);
+}
+
 OQS_STATUS oqsMboCreateDecayOperator(MboTensorOp op,
 				     struct OqsDecayOperator *dop)
 {
@@ -45,9 +55,28 @@ OQS_STATUS oqsMboCreateDecayOperator(MboTensorOp op,
 	return OQS_SUCCESS;
 }
 
-OQS_STATUS oqsMboDestroy(struct OqsDecayOperator *dop)
+OQS_STATUS oqsMboDestroyDecayOperator(struct OqsDecayOperator *dop)
 {
 	struct OqsMboOperator *opCtx = dop->ctx;
+	mboNumOpDestroy(&opCtx->op);
+	free(opCtx);
+	return OQS_SUCCESS;
+}
+
+OQS_STATUS oqsMboCreateSchrodingerEqn(MboTensorOp hamiltonian,
+				     struct OqsSchrodingerEqn *eqn)
+{
+	struct OqsMboOperator *opCtx = malloc(sizeof(opCtx));
+	if (!opCtx) return OQS_OUT_OF_MEMORY;
+	mboNumOpCompile(hamiltonian, &opCtx->op);
+	eqn->ctx = opCtx;
+	eqn->RHS = oqsMboSchEqnApply;
+	return OQS_SUCCESS;
+}
+
+OQS_STATUS oqsMboDestroySchrodingerEqn(struct OqsSchrodingerEqn *eqn)
+{
+	struct OqsMboOperator *opCtx = eqn->ctx;
 	mboNumOpDestroy(&opCtx->op);
 	free(opCtx);
 	return OQS_SUCCESS;

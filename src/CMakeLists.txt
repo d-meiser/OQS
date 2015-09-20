@@ -19,6 +19,9 @@ if(OQS_WITH_MBO)
 endif()
 
 add_library(OQS ${OQS_SRCS} ${OQS_HEADERS})
+if(OQS_WITH_MBO)
+  target_link_libraries(OQS MBO)
+endif()
 
 if(UNIX)
   target_link_libraries(OQS m)
