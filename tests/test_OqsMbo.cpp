@@ -18,4 +18,22 @@ with oqs.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <gtest/gtest.h>
 #include <OqsMbo.h>
+#include <Mbo.h>
 
+struct DecayOperator : public ::testing::Test {
+  void SetUp() {
+    MboProdSpace h = mboProdSpaceCreate(2);
+    mboTensorOpNull(h, &op);
+    mboProdSpaceDestroy(&h);
+    MboElemOp sz = mboSigmaZ();
+    mboTensorOpAddTo(sz, 0, op);
+    mboElemOpDestroy(&sz);
+  }
+  void TearDown() {
+    mboTensorOpDestroy(&op);
+  }
+  MboTensorOp op;
+};
+
+TEST_F(DecayOperator, CanBeConstructedFromMboOperator) {
+}
