@@ -20,7 +20,7 @@ with oqs.  If not, see <http://www.gnu.org/licenses/>.
 #include <MboNumOp.h>
 #include <MboAmplitude.h>
 
-struct OqsMboOperator_ {
+struct OqsMboOperator {
 	MboNumOp op;
 };
 
@@ -29,7 +29,7 @@ static void oqsMboApply(const struct OqsAmplitude *x, struct OqsAmplitude *y,
 {
 	static const struct MboAmplitude alpha = {1, 0};
 	static const struct MboAmplitude beta = {0};
-	OqsMboOperator opCtx = ctx;
+	struct OqsMboOperator *opCtx = ctx;
 	mboNumOpMatVec(alpha, opCtx->op, (struct MboAmplitude *)x, beta,
 		       (struct MboAmplitude *)y);
 }
@@ -37,7 +37,7 @@ static void oqsMboApply(const struct OqsAmplitude *x, struct OqsAmplitude *y,
 OQS_STATUS oqsMboCreateDecayOperator(MboTensorOp op,
 				     struct OqsDecayOperator *dop)
 {
-	OqsMboOperator opCtx = malloc(sizeof(opCtx));
+	struct OqsMboOperator *opCtx = malloc(sizeof(opCtx));
 	if (!opCtx) return OQS_OUT_OF_MEMORY;
 	mboNumOpCompile(op, &opCtx->op);
 	dop->ctx = opCtx;
@@ -47,7 +47,7 @@ OQS_STATUS oqsMboCreateDecayOperator(MboTensorOp op,
 
 OQS_STATUS oqsMboDestroy(struct OqsDecayOperator *dop)
 {
-	OqsMboOperator opCtx = dop->ctx;
+	struct OqsMboOperator *opCtx = dop->ctx;
 	mboNumOpDestroy(&opCtx->op);
 	free(opCtx);
 	return OQS_SUCCESS;
