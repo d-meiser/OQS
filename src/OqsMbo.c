@@ -18,3 +18,23 @@ with oqs.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <OqsMbo.h>
 
+struct OqsMboOperator_ {
+	MboTensorOp op;
+};
+
+OQS_STATUS oqsMboCreateDecayOperator(MboTensorOp op,
+				     struct OqsDecayOperator *dop)
+{
+	OqsMboOperator opCtx = malloc(sizeof(opCtx));
+	if (!opCtx) return OQS_OUT_OF_MEMORY;
+	opCtx->op = op;
+	dop->ctx = opCtx;
+	return OQS_SUCCESS;
+}
+
+OQS_STATUS oqsMboDestroy(struct OqsDecayOperator *dop)
+{
+	OqsMboOperator opCtx = dop->ctx;
+	free(opCtx);
+	return OQS_SUCCESS;
+}

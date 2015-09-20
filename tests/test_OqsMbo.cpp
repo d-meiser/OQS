@@ -18,6 +18,7 @@ with oqs.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <gtest/gtest.h>
 #include <OqsMbo.h>
+#include <OqsJumpTrajectory.h>
 #include <Mbo.h>
 
 struct DecayOperator : public ::testing::Test {
@@ -36,4 +37,10 @@ struct DecayOperator : public ::testing::Test {
 };
 
 TEST_F(DecayOperator, CanBeConstructedFromMboOperator) {
+  struct OqsDecayOperator decayOperator = {0};
+  OQS_STATUS stat = oqsMboCreateDecayOperator(op, &decayOperator);
+  ASSERT_EQ(OQS_SUCCESS, stat);
+  EXPECT_TRUE(0 != decayOperator.ctx);
+  stat = oqsMboDestroy(&decayOperator);
+  ASSERT_EQ(OQS_SUCCESS, stat);
 }

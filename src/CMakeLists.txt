@@ -1,7 +1,14 @@
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/../include
+    ${PROJECT_BINARY_DIR}
     )
+if(OQS_WITH_MBO)
+  include_directories(
+      ${PROJECT_SOURCE_DIR}/mbo/include
+      ${PROJECT_BINARY_DIR}/mbo
+      )
+endif()
 
 set(OQS_SRCS
     Integrator.c

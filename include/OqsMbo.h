@@ -25,7 +25,23 @@ with oqs.  If not, see <http://www.gnu.org/licenses/>.
        "Please reconfigure with MBO support enabled.\n"
 #endif
 
+#include <OqsExport.h>
+#include <OqsErrors.h>
+#include <OqsJumpTrajectory.h>
+#include <MboTensorOp.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct OqsMboOperator_;
 typedef struct OqsMboOperator_ *OqsMboOperator;
 
+OQS_EXPORT OQS_STATUS
+oqsMboCreateDecayOperator(MboTensorOp op, struct OqsDecayOperator *dop);
+OQS_EXPORT OQS_STATUS oqsMboDestroy(struct OqsDecayOperator *dop);
+
+#ifdef __cplusplus
+}
+#endif
 #endif
