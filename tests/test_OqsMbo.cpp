@@ -44,3 +44,16 @@ TEST_F(DecayOperator, CanBeConstructedFromMboOperator) {
   stat = oqsMboDestroy(&decayOperator);
   ASSERT_EQ(OQS_SUCCESS, stat);
 }
+
+TEST_F(DecayOperator, CanBeApplied) {
+  struct OqsDecayOperator decayOperator = {0};
+  OQS_STATUS stat = oqsMboCreateDecayOperator(op, &decayOperator);
+  struct OqsAmplitude x[2] = {{2.3, 1.7}, {5.2, -1.8}};
+  struct OqsAmplitude y[2] = {{0}};
+  decayOperator.apply(x, y, decayOperator.ctx);
+  EXPECT_FLOAT_EQ(-x[0].re, y[0].re);
+  EXPECT_FLOAT_EQ(-x[0].im, y[0].im);
+  EXPECT_FLOAT_EQ(x[1].re, y[1].re);
+  EXPECT_FLOAT_EQ(x[1].im, y[1].im);
+  stat = oqsMboDestroy(&decayOperator);
+}

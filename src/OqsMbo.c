@@ -17,24 +17,38 @@ You should have received a copy of the GNU General Public License along
 with oqs.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <OqsMbo.h>
+#include <MboNumOp.h>
+#include <MboAmplitude.h>
 
 struct OqsMboOperator_ {
-	MboTensorOp op;
+	MboNumOp op;
 };
+
+static void oqsMboApply(const struct OqsAmplitude *x, struct OqsAmplitude *y,
+			void *ctx)
+{
+	static const struct MboAmplitude alpha = {1, 0};
+	static const struct MboAmplitude beta = {0};
+	OqsMboOperator opCtx = ctx;
+	mboNumOpMatVec(alpha, opCtx->op, (struct MboAmplitude *)x, beta,
+		       (struct MboAmplitude *)y);
+}
 
 OQS_STATUS oqsMboCreateDecayOperator(MboTensorOp op,
 				     struct OqsDecayOperator *dop)
 {
 	OqsMboOperator opCtx = malloc(sizeof(opCtx));
 	if (!opCtx) return OQS_OUT_OF_MEMORY;
-	opCtx->op = op;
+	mboNumOpCompile(op, &opCtx->op);
 	dop->ctx = opCtx;
+	dop->apply = oqsMboApply;
 	return OQS_SUCCESS;
 }
 
 OQS_STATUS oqsMboDestroy(struct OqsDecayOperator *dop)
 {
 	OqsMboOperator opCtx = dop->ctx;
+	mboNumOpDestroy(&opCtx->op);
 	free(opCtx);
 	return OQS_SUCCESS;
 }
